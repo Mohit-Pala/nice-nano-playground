@@ -1,0 +1,5 @@
+# gitignore builds
+target/*
+
+# gitignore build artifacts in crates
+crates/*/target/*
