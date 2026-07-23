@@ -3,3 +3,6 @@ target/*
 
 # gitignore build artifacts in crates
 crates/*/target/*
+
+# ignore compiled .uf2
+crates/ropk-fw/ropk-fw.uf2
