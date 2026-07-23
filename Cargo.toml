@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ropk-proto",
+    "crates/ropk-radio",
+    "crates/ropk-usb",
+    "xtask",
+]
+exclude = ["crates/ropk-fw"]
