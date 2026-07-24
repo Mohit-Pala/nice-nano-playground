@@ -10,14 +10,18 @@ test = false
 bench = false
 
 [dependencies]
-embassy-executor = { version = "0.9", features = ["arch-cortex-m", "executor-thread", "defmt"] }
+embassy-executor = { version = "0.8", features = ["arch-cortex-m", "executor-thread", "defmt"] }
 embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime"] }
-embassy-nrf = { version = "0.5", features = ["nrf52840", "time-driver-rtc1", "gpiote", "defmt"] }
+embassy-nrf = { version = "0.6", features = ["nrf52840", "time-driver-rtc1", "gpiote", "defmt"] }
 cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
 defmt = "1"
 defmt-rtt = "1"
 panic-probe = { version = "1", features = ["print-defmt"] }
+embassy-usb = { version = "0.6.0", features = ["defmt"] }
+usbd-hid = { version = "0.10.0", default-features = false }
+static_cell = "2.1.1"
+heapless = "0.9.3"
 
 [profile.release]
 debug = 2

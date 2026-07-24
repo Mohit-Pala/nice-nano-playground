@@ -5,6 +5,13 @@ use std::process::{Command, ExitCode};
 const APP_BASE: &str = "0x26000";
 const FAMILY: &str = "NRF52840";
 
+// can go up to 500, chip itself is working fine but going above 500 seems to depend upon the quality of solder and i fucking suck at this shit
+// this should prob never be used unless running the debugger
+const CHIP: &str = "nRF52840_xxAA";
+const DEFAULT_SPEED_KHZ: &str = "100";
+const BOOTLOADER_HEX: &str =
+    "tools/nice_nano_bootloader-0.6.0_s140_6.1.1/nice_nano_bootloader-0.6.0_s140_6.1.1.hex";
+
 fn repo_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent() // nav 1 dir up
