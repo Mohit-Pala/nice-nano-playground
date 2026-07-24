@@ -29,7 +29,7 @@ type Drvr = Driver<'static, peripherals::USBD, HardwareVbusDetect>;
 #[embassy_executor::task]
 async fn usb_task(mut device: embassy_usb::UsbDevice<'static, Drvr>)
 {
-    device.run().await();
+    device.run().await;
 }    
 
 
