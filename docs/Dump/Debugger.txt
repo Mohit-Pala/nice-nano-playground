@@ -1,0 +1,15 @@
+info abt the debugger 
+
+
+rp2040 zero - get debugger from rp's github
+
+wire up
+
+// todo:
+make this a fancy ass md table
+
+nice nano - rp2040 zero
+rst - gp1
+clk - gp2
+dio - gp3
+gnd - gnd
