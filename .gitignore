@@ -6,3 +6,10 @@ crates/*/target/*
 
 # ignore compiled .uf2
 crates/ropk-fw/ropk-fw.uf2
+
+
+# nice nano bootloader, grab from https://nicekeyboards.com/docs/nice-nano/troubleshooting
+tools/nice_nano_bootloader-0.6.0_s140_6.1.1/*
+
+# rp2040 debugprobe, grab from raspberry pis website
+tools/debugprobe/*
