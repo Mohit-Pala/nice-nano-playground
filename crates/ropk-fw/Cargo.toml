@@ -12,7 +12,7 @@ bench = false
 [dependencies]
 embassy-executor = { version = "0.8", features = ["arch-cortex-m", "executor-thread", "defmt"] }
 embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime"] }
-embassy-nrf = { version = "0.6", features = ["nrf52840", "time-driver-rtc1", "gpiote", "defmt"] }
+embassy-nrf = { version = "0.6", features = ["nrf52840", "time-driver-rtc1", "gpiote", "defmt", "unstable-pac"] }
 cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
 defmt = "1"
