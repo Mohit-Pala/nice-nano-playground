@@ -7,5 +7,12 @@
         "ropenpuck",
         "ropk",
         "xtask"
+    ],
+    "rust-analyzer.linkedProjects": [
+        "./crates/ropk-fw/Cargo.toml",
+        "./crates/ropk-proto/Cargo.toml",
+        "./crates/ropk-radio/Cargo.toml",
+        "./crates/ropk-usb/Cargo.toml",
+        "./xtask/Cargo.toml"
     ]
 }

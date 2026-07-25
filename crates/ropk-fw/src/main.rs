@@ -35,4 +35,6 @@ async fn main(_spawner: Spawner) {
     let rev_base: [u8; 4] = sc_base_address.map(rf_bitrev8); // bit reverse every byte and return as an array
     let rev_prefix: u8 = rf_bitrev8(sc_prefix); // same for prefix
     let base0_val = u32::from_be_bytes(rev_base[0..4].try_into().unwrap());
+    
+
 }
