@@ -1,11 +1,21 @@
 {
     "cSpell.words": [
         "bitrev",
+        "Crccnf",
+        "Crcinit",
+        "Crcpoly",
         "defmt",
         "dont",
         "funcs",
+        "Pcnf",
+        "regs",
+        "rfconfig",
         "ropenpuck",
         "ropk",
+        "rxaddr",
+        "Rxaddresses",
+        "txaddr",
+        "Txaddress",
         "xtask"
     ],
     "rust-analyzer.linkedProjects": [
