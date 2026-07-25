@@ -2,7 +2,7 @@
 name = "ropk-fw"
 version = "0.1.0"
 edition = "2024"
-description = "Firmware"
+description = "Firmware" 
 
 [[bin]]
 name = "ropk-fw"
