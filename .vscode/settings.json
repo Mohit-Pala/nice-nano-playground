@@ -12,8 +12,11 @@
         "rfconfig",
         "ropenpuck",
         "ropk",
+        "rssistart",
+        "rssistop",
         "rxaddr",
         "Rxaddresses",
+        "rxen",
         "txaddr",
         "Txaddress",
         "xtask"

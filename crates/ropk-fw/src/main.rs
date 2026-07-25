@@ -2,17 +2,16 @@
 #![no_main]
 
 use embassy_executor::Spawner;
-use embassy_nrf::pac::radio::regs::{Crccnf, Crcinit, Crcpoly, Pcnf0, Pcnf1, Prefix0, Rxaddresses, Txaddress};
+use embassy_nrf::pac::radio::regs::{
+    Crccnf, Crcinit, Crcpoly, Pcnf0, Pcnf1, Prefix0, Rxaddresses, Txaddress,
+};
+use embassy_time::{Duration, Timer};
 use {defmt_rtt as _, panic_probe as _};
-
-
 
 // helper funcs - move to a serivces file
 pub fn rf_bitrev8(val: u8) -> u8 {
     val.reverse_bits()
 }
-
-
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
@@ -25,12 +24,11 @@ async fn main(_spawner: Spawner) {
     let radio = embassy_nrf::pac::RADIO;
     defmt::info!("pac radio setup");
 
-
     // docs -> steam controllers use hex ibex as they base address and 0x10 as prefix
     // values from radio.cpp, protocol.md says 0x01040040, radio cpp has a comment stating it needs to be >= 66
     // todo: move these vals to a dedicated file under radio
-    
-    let sc_base_address: [u8; 4] = *b"ibex"; 
+
+    let sc_base_address: [u8; 4] = *b"ibex";
     let sc_prefix: u8 = 0x10;
     let sc_txaddr: Txaddress = Txaddress(0);
     let sc_rxaddr: Rxaddresses = Rxaddresses(1);
@@ -56,5 +54,25 @@ async fn main(_spawner: Spawner) {
     radio.crcpoly().write_value(sc_crcpoly);
     radio.crcinit().write_value(sc_crcinit);
 
-    defmt::info!("written to radio")
+    defmt::info!("written to radio");
+
+    // shorts
+    radio.shorts().write(|w| {
+        w.set_ready_start(true);
+        w.set_end_start(true);
+        w.set_address_rssistart(true);
+        w.set_disabled_rssistop(true);
+    });
+    // Enable RADIO in RX mode 
+    radio.tasks_rxen().write_value(true as u32);
+    
+    defmt::info!("radio enabled in RX mode");
+
+    loop {
+        if radio.events_end().read() != 0 {
+            radio.events_end().write_value(0);
+            defmt::info!("radio end");
+        }
+        Timer::after(Duration::from_millis(1)).await;
+    }
 }
