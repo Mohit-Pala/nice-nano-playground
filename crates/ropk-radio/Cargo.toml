@@ -5,3 +5,5 @@ edition = "2024"
 description = "comms"
 
 [dependencies]
+embassy-nrf = { version = "0.6", features = ["nrf52840", "unstable-pac"] }
+defmt = "1"
