@@ -4,9 +4,13 @@
         "Crccnf",
         "Crcinit",
         "Crcpoly",
+        "crcstatus",
         "defmt",
         "dont",
         "funcs",
+        "Hfclk",
+        "MBIT",
+        "packetptr",
         "Pcnf",
         "regs",
         "rfconfig",
@@ -19,6 +23,7 @@
         "rxen",
         "txaddr",
         "Txaddress",
+        "Xtal",
         "xtask"
     ],
     "rust-analyzer.linkedProjects": [

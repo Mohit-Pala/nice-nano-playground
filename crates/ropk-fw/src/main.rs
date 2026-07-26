@@ -13,9 +13,14 @@ pub fn rf_bitrev8(val: u8) -> u8 {
     val.reverse_bits()
 }
 
+
+
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let _p = embassy_nrf::init(Default::default());
+    let mut config = embassy_nrf::config::Config::default();
+    config.hfclk_source = embassy_nrf::config::HfclkSource::ExternalXtal;
+    let _p = embassy_nrf::init(config);
+    // let _p = embassy_nrf::init(Default::default());
 
     // dont use this radio, cant get low levelaccesss to it
     // let radio = p.RADIO;
@@ -54,6 +59,14 @@ async fn main(_spawner: Spawner) {
     radio.crcpoly().write_value(sc_crcpoly);
     radio.crcinit().write_value(sc_crcinit);
 
+    let rx_buf: [u8; 100] = [0; 100];
+
+    // radio.mode().write_value(BLE_2MBIT);
+    radio.mode().write(|w| w.set_mode(embassy_nrf::pac::radio::vals::Mode::BLE_2MBIT));
+    radio.frequency().write(|w| w.set_frequency(2));
+    radio.packetptr().write_value(rx_buf.as_ptr() as u32);
+
+
     defmt::info!("written to radio");
 
     // shorts
@@ -65,13 +78,26 @@ async fn main(_spawner: Spawner) {
     });
     // Enable RADIO in RX mode 
     radio.tasks_rxen().write_value(true as u32);
-    
     defmt::info!("radio enabled in RX mode");
 
     loop {
         if radio.events_end().read() != 0 {
             radio.events_end().write_value(0);
-            defmt::info!("radio end");
+            // defmt::info!("radio end");
+            let crc_ok = (radio.crcstatus().read().0 & 1) != 0;
+            let raw_len = rx_buf[0] as usize;
+            let s1_pid = rx_buf[1];
+            
+            let payload_len = if raw_len > 0 { raw_len - 1 } else { 0 };
+            let valid_len = payload_len.min(rx_buf.len().saturating_sub(2));  // min of payload len vs 100 - 2
+            let payload = &rx_buf[2..2 + valid_len]; // array slice from idx 2 to 2 + 17? 
+
+            defmt::info!("Log start");
+            defmt::info!("CRC OK   : {}", crc_ok);
+            defmt::info!("S1/PID   : 0x{:02x}", s1_pid);
+            defmt::info!("Length   : {} bytes", payload_len);
+            defmt::info!("Payload  : {=[u8]:02x}", payload);
+            defmt::info!("Log end");
         }
         Timer::after(Duration::from_millis(1)).await;
     }
