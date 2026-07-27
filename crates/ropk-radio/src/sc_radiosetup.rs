@@ -48,13 +48,14 @@ impl ScRadio {
         self.sc_radio.tasks_rxen().write_value(1);
     }
 
-    pub fn poll(&self) {
+    pub fn poll(&self) -> Option<ScRadioData<'_>> {
         if self.sc_radio.events_end().read() == 0 {
-            return;
+            return None;
         }
         self.sc_radio.events_end().write_value(0);
         let crc_ok = (self.sc_radio.crcstatus().read().0 & 1) != 0;
-        Some(ScRadioData::from_buf(self.rx_buf, crc_ok));
+        // i dont fuckn know why but dont use ; for default return path
+        Some(ScRadioData::from_buf(self.rx_buf, crc_ok))
     }
 }
 
