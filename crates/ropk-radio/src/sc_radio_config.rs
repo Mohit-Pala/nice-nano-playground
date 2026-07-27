@@ -17,19 +17,23 @@ pub struct SteamControllerRadioConfig {
     pub crcpoly: Crcpoly,
 }
 
-// configs for the steam controller
-// steam controllers use hex ibex as they base address and 0x10 as prefix
-// values from radio.cpp, protocol.md says 0x01040040, radio cpp has a comment stating it needs to be >= 66
-pub const STEAM_CONTROLLER_RADIO_CONFIG: SteamControllerRadioConfig = SteamControllerRadioConfig {
-    base: *b"ibex",
-    prefix: 0x10,
-    frequency: 2,
-    mode: Mode::BLE_2MBIT,
-    tx_addr: Txaddress(0),
-    rx_addr: Rxaddresses(0),
-    pcnf0: Pcnf0(0x0003_0008),
-    pcnf1: Pcnf1(0x0104_0060),
-    crccnf: Crccnf(2),
-    crcpoly: Crcpoly(0x11021),
-    crcinit: Crcinit(0xFFFF),
-};
+
+impl SteamControllerRadioConfig {
+    // configs for the steam controller
+    // steam controllers use hex ibex as they base address and 0x10 as prefix
+    // values from radio.cpp, protocol.md says 0x01040040, radio cpp has a comment stating it needs to be >= 66
+    pub const STEAM_CONTROLLER_RADIO_CONFIG: SteamControllerRadioConfig = SteamControllerRadioConfig {
+        base: *b"ibex",
+        prefix: 0x10,
+        frequency: 2,
+        mode: Mode::BLE_2MBIT,
+        tx_addr: Txaddress(0),
+        rx_addr: Rxaddresses(0),
+        pcnf0: Pcnf0(0x0003_0008),
+        pcnf1: Pcnf1(0x0104_0060),
+        crccnf: Crccnf(2),
+        crcpoly: Crcpoly(0x11021),
+        crcinit: Crcinit(0xFFFF),
+    };
+}
+
