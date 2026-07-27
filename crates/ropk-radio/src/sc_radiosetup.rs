@@ -1,6 +1,6 @@
 use embassy_nrf::pac::radio::{Radio, regs::Prefix0};
 
-use crate::{bitrev8, sc_radio_config::SteamControllerRadioConfig};
+use crate::{bitrev8, sc_radio_config::SteamControllerRadioConfig, sc_radio_data::ScRadioData};
 
 pub struct ScRadio {
     sc_radio: Radio,
@@ -48,6 +48,13 @@ impl ScRadio {
         self.sc_radio.tasks_rxen().write_value(1);
     }
 
-    
+    pub fn poll(&self) {
+        if self.sc_radio.events_end().read() == 0 {
+            return;
+        }
+        self.sc_radio.events_end().write_value(0);
+        let crc_ok = (self.sc_radio.crcstatus().read().0 & 1) != 0;
+        Some(ScRadioData::from_buf(self.rx_buf, crc_ok));
+    }
 }
 
