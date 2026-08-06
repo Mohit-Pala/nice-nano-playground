@@ -30,6 +30,38 @@ impl RequestHandler for ScPuckSlot {
     }
     
     fn set_report(&mut self, id: ReportId, data: &[u8]) -> OutResponse {
-        // cleep time
+        if data.is_empty() {
+            return OutResponse::Accepted;
+        }
+
+        let cmd = data[0];
+        let len = if data.len() > 1 { data[1] } else { 0 };
+        let payload = if data.len() > 2 { &data[2..] } else { &[] };
+
+        defmt::info!("cmd: {=u8:#04X}, len: {=u8}", cmd, len);
+        
+        self.resp.fill(0);
+        self.resp_len = 63;
+
+        // https://doc.rust-lang.org/book/ch06-02-match.html
+        // https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html
+        // rabbithole: match is really powerful
+        match cmd {
+            // case 0x83
+            0x83 => {
+                self.resp[0] = 0x83;
+                self.resp[1] = 0x25;
+                // let OxAttr83: [u8; 25] = [
+
+                // ]
+            }
+
+            // fuckass read squiggly
+            _ => {
+
+            }
+        }
+
+        OutResponse::Accepted
     }
 }
