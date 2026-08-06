@@ -6,3 +6,4 @@ description = "USB"
 
 [dependencies]
 embassy-usb = "0.6.0"
+defmt = "1"
