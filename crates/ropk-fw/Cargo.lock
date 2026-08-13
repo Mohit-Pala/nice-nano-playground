@@ -735,6 +735,7 @@ dependencies = [
  "heapless 0.9.3",
  "panic-probe",
  "ropk-radio",
+ "ropk-usb",
  "static_cell",
  "usbd-hid",
 ]
@@ -745,6 +746,14 @@ version = "0.1.0"
 dependencies = [
  "defmt 1.1.1",
  "embassy-nrf",
+]
+
+[[package]]
+name = "ropk-usb"
+version = "0.1.0"
+dependencies = [
+ "defmt 1.1.1",
+ "embassy-usb",
 ]
 
 [[package]]
