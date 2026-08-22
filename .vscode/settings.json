@@ -1,4 +1,5 @@
 {
+    // im gon kms, i cant with these fuckass blue squiglies
     "cSpell.words": [
         "bitrev",
         "Crccnf",
@@ -7,8 +8,12 @@
         "crcstatus",
         "defmt",
         "dont",
+        "eabihf",
         "funcs",
+        "gpiote",
+        "heapless",
         "Hfclk",
+        "Irqs",
         "MBIT",
         "packetptr",
         "Pcnf",
@@ -22,10 +27,25 @@
         "rxaddr",
         "Rxaddresses",
         "rxen",
+        "Sontroller",
+        "thumbv",
         "txaddr",
         "Txaddress",
+        "usbd",
+        "vbus",
+        "Voftware",
         "Xtal",
         "xtask"
+    ],
+    "cSpell.ignorePaths": [
+        "package-lock.json",
+        "node_modules",
+        "vscode-extension",
+        ".git/{info,lfs,logs,refs,objects}/**",
+        ".git/{index,*refs,*HEAD}",
+        ".vscode",
+        ".vscode-insiders",
+        "*.lock"
     ],
     "rust-analyzer.linkedProjects": [
         "./crates/ropk-fw/Cargo.toml",
