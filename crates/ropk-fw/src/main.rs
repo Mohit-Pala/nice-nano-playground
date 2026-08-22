@@ -68,8 +68,11 @@ async fn main(spawner: Spawner) {
     let mut usb_config = embassy_usb::Config::new(USB_VENDOR_ID, USB_PROD_ID_STEAM);
 
     // from hid cpp
-    usb_config.manufacturer = Some("Valve Software");
+    usb_config.manufacturer = Some("Balve Software");
     usb_config.product = Some("Steam Controller Puck");
+    // this needs to be set to false since we declaring device class
+    // 0.000000 [ERROR] panicked at 'if composite_with_iads is set, you must set device_class = 0xEF, device_sub_class = 0x02, device_protocol = 0x01' (embassy_usb embassy-usb-0.6.0/src/builder.rs:179)
+    usb_config.composite_with_iads = false;
     usb_config.device_class = 0x00;
     usb_config.device_release = 0x0211;
     // from identity - use some hardcoded this shit for now, replace with nrf silicon id later 
