@@ -24,10 +24,14 @@ impl ScPuckSlot {
 
 impl RequestHandler for ScPuckSlot {
     fn get_report(&mut self, id: ReportId, buf: &mut [u8]) -> Option<usize> {
-        // copies the first len bytes to resp
-        let len = self.resp_len.min(buf.len());
-        buf[..len].copy_from_slice(&self.resp[..len]);
-        Some(len)
+        let report_id = match id {
+            ReportId::Feature(n) => n,
+            _ => return None,
+        };
+        buf[0] = report_id;
+        let len = self.resp_len.min(buf.len().saturating_sub(1));
+        buf[1..1 + len].copy_from_slice(&self.resp[..len]);
+        Some(len + 1)
     }
 
     fn set_report(&mut self, id: ReportId, data: &[u8]) -> OutResponse {
@@ -35,9 +39,15 @@ impl RequestHandler for ScPuckSlot {
             return OutResponse::Accepted;
         }
 
-        let command = data[0];
-        let len = if data.len() > 1 { data[1] } else { 0 };
-        let payload = if data.len() > 2 { &data[2..] } else { &[] };
+        if data.len() < 2 {
+            return OutResponse::Accepted;
+        }
+
+
+
+        let command = data[1];
+        let len = if data.len() > 2 { data[2] } else { 0 };
+        let payload = if data.len() > 3 { &data[3..] } else { &[] };
 
         defmt::info!("cmd: {=u8:#04X}, len: {=u8}", command, len);
 
