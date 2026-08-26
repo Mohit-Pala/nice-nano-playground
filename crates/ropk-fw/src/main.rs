@@ -37,7 +37,7 @@ static SLOT_1_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
 static SLOT_1_STATE: StaticCell<HidState> = StaticCell::new();
 static SLOT_2_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
 static SLOT_2_STATE: StaticCell<HidState> = StaticCell::new();
-
+    
 static SLOT_3_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
 static SLOT_3_STATE: StaticCell<HidState> = StaticCell::new();
 

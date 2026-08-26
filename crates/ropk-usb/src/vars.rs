@@ -1,5 +1,10 @@
 // rename this file
 
+pub const CONFIG_DESCRIPTOR_LEN: u16 = 256;
+pub const BOS_DESCRIPTOR_LEN: u16 = 256;
+pub const CONTROL_BUF_LEN: u16 = 128;
+
+
 // USB Product and Vendor IDs
 // from  puck HID cpp and protocol md
 pub const USB_VENDOR_ID: u16 = 0x28DE;

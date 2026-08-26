@@ -13,6 +13,7 @@
         "gpiote",
         "heapless",
         "Hfclk",
+        "iads",
         "Irqs",
         "MBIT",
         "packetptr",
