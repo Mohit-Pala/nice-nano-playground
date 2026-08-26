@@ -5,7 +5,7 @@ pub struct UsbDescLens {
 }
 
 impl UsbDescLens {
-    const fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             conf_desc_len: 256,
             bos_desc_len: 256,
@@ -27,7 +27,7 @@ pub struct UsbConfig {
 
 // from hid cpp
 impl UsbConfig {
-    const fn new() -> Self {
+    pub const fn new() -> Self {
         Self{
             usb_ven_id: 0x28DE,
             usb_prod_id:0x1142,
@@ -42,5 +42,22 @@ impl UsbConfig {
             composite_with_iads: false,
             dev_class: 0x00,
         }
+    }
+
+    // todo: this needs to be wired in
+    pub const fn with_serial_number(mut self, serial_num: &'static str) -> Self {
+        self.serial_num = serial_num;
+        return self;
+    }
+
+    pub fn to_embassy_usb_conf(&self) -> embassy_usb::Config<'static> {
+        let mut usb_config = embassy_usb::Config::new(self.usb_ven_id, self.usb_prod_id);
+        usb_config.manufacturer = Some(self.usb_manufacturer);
+        usb_config.product = Some(self.usb_prod_name);
+        usb_config.composite_with_iads = self.composite_with_iads;
+        usb_config.device_class = self.dev_class;
+        usb_config.device_release = self.dev_rel;
+        usb_config.serial_number = Some(self.serial_num);
+        return usb_config;
     }
 }

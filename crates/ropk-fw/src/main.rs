@@ -9,9 +9,7 @@ use embassy_time::{Duration, Timer};
 use embassy_usb::class::hid::{HidReaderWriter, State as HidState};
 use ropk_radio::{sc_radio_config::SteamControllerRadioConfig, sc_radiosetup::ScRadio};
 use ropk_usb::{
-    sc_default_descriptor::PUCK_HID_DESC,
-    sc_puck_bond::ScPuckSlot,
-    vars::{USB_PROD_ID_STEAM, USB_VENDOR_ID},
+    sc_default_descriptor::PUCK_HID_DESC, sc_puck_bond::ScPuckSlot, usb_id_helper::UsbConfig, vars::{USB_PROD_ID_STEAM, USB_VENDOR_ID},
 };
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
@@ -65,21 +63,7 @@ async fn main(spawner: Spawner) {
     defmt::info!("radio started");
 
     let driver = Driver::new(p.USBD, Irqs, HardwareVbusDetect::new(Irqs));
-    let mut usb_config = embassy_usb::Config::new(USB_VENDOR_ID, USB_PROD_ID_STEAM);
-
-    // from hid cpp
-    usb_config.manufacturer = Some("Balve Software");
-    usb_config.product = Some("Steam Controller Puck");
-    // this needs to be set to false since we declaring device class
-    // 0.000000 [ERROR] panicked at 'if composite_with_iads is set, you must set device_class = 0xEF, device_sub_class = 0x02, device_protocol = 0x01' (embassy_usb embassy-usb-0.6.0/src/builder.rs:179)
-    usb_config.composite_with_iads = false;
-    usb_config.device_class = 0x00;
-
-    // also changed ts in a prev commit
-    // todo - change the release ver back to wghat it was
-    usb_config.device_release = 0x1;
-    // from identity - hardcoded this shit for now, replace with nrf silicon id later 
-    usb_config.serial_number = Some("FXB9960200000");
+    let usb_config = UsbConfig::new().to_embassy_usb_conf();
 
 
     let mut builder = embassy_usb::Builder::new(
