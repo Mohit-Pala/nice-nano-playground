@@ -6,11 +6,10 @@ use embassy_nrf::{
     bind_interrupts, peripherals, usb::Driver, usb::vbus_detect::HardwareVbusDetect,
 };
 use embassy_time::{Duration, Timer};
-use embassy_usb::class::hid::{HidReaderWriter, State as HidState};
 use ropk_radio::{sc_radio_config::SteamControllerRadioConfig, sc_radiosetup::ScRadio};
-use ropk_usb::{
-    sc_default_descriptor::PUCK_HID_DESC, sc_puck_bond::ScPuckSlot, usb_id_helper::UsbConfig, vars::{USB_PROD_ID_STEAM, USB_VENDOR_ID},
-};
+use ropk_usb::
+    usb_id_helper::{PuckUsbStruct, build_sc_puck_usb}
+;
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
 
@@ -22,22 +21,7 @@ bind_interrupts!(struct Irqs {
 type UsbDriver = Driver<'static, peripherals::USBD, HardwareVbusDetect>;
 
 static RX_BUF: StaticCell<[u8; 100]> = StaticCell::new();
-
-// shit needed for https://docs.embassy.dev/embassy-usb/git/default/struct.Builder.html
-static CONFIG_DESCRIPTOR: StaticCell<[u8; 256]> = StaticCell::new();
-static BOS_DESCRIPTOR: StaticCell<[u8; 256]> = StaticCell::new();
-static CONTROL_BUF: StaticCell<[u8; 128]> = StaticCell::new();
-
-// slots - exapand to 4, this is a fucked way to handle this but fine for teaitng
-static SLOT_0_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
-static SLOT_0_STATE: StaticCell<HidState> = StaticCell::new();
-static SLOT_1_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
-static SLOT_1_STATE: StaticCell<HidState> = StaticCell::new();
-static SLOT_2_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
-static SLOT_2_STATE: StaticCell<HidState> = StaticCell::new();
-    
-static SLOT_3_HANDLER: StaticCell<ScPuckSlot> = StaticCell::new();
-static SLOT_3_STATE: StaticCell<HidState> = StaticCell::new();
+static PUCK_USB_STRUCT: PuckUsbStruct = PuckUsbStruct::new();
 
 
 #[embassy_executor::task]
@@ -63,82 +47,7 @@ async fn main(spawner: Spawner) {
     defmt::info!("radio started");
 
     let driver = Driver::new(p.USBD, Irqs, HardwareVbusDetect::new(Irqs));
-    let usb_config = UsbConfig::new().to_embassy_usb_conf();
-
-
-    let mut builder = embassy_usb::Builder::new(
-        driver,
-        usb_config,
-        CONFIG_DESCRIPTOR.init([0; 256]),
-        BOS_DESCRIPTOR.init([0; 256]),
-        &mut [],
-        CONTROL_BUF.init([0; 128]),
-    );
-
-
-    // SHITS TAKEN WORD FOR WORD 
-    // MOSVE THIS TO THE DOCS FOLDER
-    		// SDL3's Proteus/Triton HIDAPI driver only binds slot HIDs on USB interfaces 2..5. Register WebUSB (IF 0)
-		    // and the wake mouse (IF 1) before the four puck slots so hid[0..3] land on IF 2..5 like the real puck.
-    // NEED TO USE SLOT 2-5 NOT 0-3
-    {
-        let mut func = builder.function(0xFF, 0x00, 0x00);
-        let _iface = func.interface();
-    }
-    {
-        let mut func = builder.function(0xFF, 0x00, 0x00);
-        let _iface = func.interface();
-    }
-
-    let slot_0 = SLOT_0_HANDLER.init(ScPuckSlot::new());
-    let slot_0_state = SLOT_0_STATE.init(HidState::new());
-
-    let hid_config = embassy_usb::class::hid::Config {
-        report_descriptor: PUCK_HID_DESC,
-        request_handler: Some(slot_0),
-        poll_ms: 1,
-        max_packet_size: 64,
-        hid_boot_protocol: embassy_usb::class::hid::HidBootProtocol::None,
-        hid_subclass: embassy_usb::class::hid::HidSubclass::No,
-    };
-
-    let _hid_slot_0 = HidReaderWriter::<_, 64, 64>::new(&mut builder, slot_0_state, hid_config);
-
-    let slot_1 = SLOT_1_HANDLER.init(ScPuckSlot::new());
-    let slot_1_state = SLOT_1_STATE.init(HidState::new());
-    let hid_config_1 = embassy_usb::class::hid::Config {
-        report_descriptor: PUCK_HID_DESC,
-        request_handler: Some(slot_1),
-        poll_ms: 1,
-        max_packet_size: 64,
-        hid_boot_protocol: embassy_usb::class::hid::HidBootProtocol::None,
-        hid_subclass: embassy_usb::class::hid::HidSubclass::No,
-    };
-    let _hid_slot_1 = HidReaderWriter::<_, 64, 64>::new(&mut builder, slot_1_state, hid_config_1);
-    let slot_2 = SLOT_2_HANDLER.init(ScPuckSlot::new());
-    let slot_2_state = SLOT_2_STATE.init(HidState::new());
-    let hid_config_2 = embassy_usb::class::hid::Config {
-        report_descriptor: PUCK_HID_DESC,
-        request_handler: Some(slot_2),
-        poll_ms: 1,
-        max_packet_size: 64,
-        hid_boot_protocol: embassy_usb::class::hid::HidBootProtocol::None,
-        hid_subclass: embassy_usb::class::hid::HidSubclass::No,
-    };
-    let _hid_slot_2 = HidReaderWriter::<_, 64, 64>::new(&mut builder, slot_2_state, hid_config_2);
-    let slot_3 = SLOT_3_HANDLER.init(ScPuckSlot::new());
-    let slot_3_state = SLOT_3_STATE.init(HidState::new());
-    let hid_config_3 = embassy_usb::class::hid::Config {
-        report_descriptor: PUCK_HID_DESC,
-        request_handler: Some(slot_3),
-        poll_ms: 1,
-        max_packet_size: 64,
-        hid_boot_protocol: embassy_usb::class::hid::HidBootProtocol::None,
-        hid_subclass: embassy_usb::class::hid::HidSubclass::No,
-    };
-    let _hid_slot_3 = HidReaderWriter::<_, 64, 64>::new(&mut builder, slot_3_state, hid_config_3);
-
-    let usb_device = builder.build();
+    let usb_device = build_sc_puck_usb(driver, &PUCK_USB_STRUCT);
     spawner.spawn(usb_task(usb_device)).unwrap();
 
     loop {
