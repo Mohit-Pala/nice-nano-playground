@@ -4,6 +4,15 @@ pub const CONFIG_DESCRIPTOR_LEN: u16 = 256;
 pub const BOS_DESCRIPTOR_LEN: u16 = 256;
 pub const CONTROL_BUF_LEN: u16 = 128;
 
+pub const DUMMY_USB_CLASS: u8 = 0xFF;
+pub const DUMMY_USB_SUBCLASS: u8 = 0x00;
+pub const DUMMY_USB_PROTOCOL: u8 = 0x00;
+
+// affliction 
+// i see that spoiled brat - infernus the goat
+// Stupid Arin, with their stupid scarf, and their stupid case, and their stupid family!
+// Arin, you're the worst!
+pub const MAX_PCKT_SIZE: u8 = 64;
 
 // USB Product and Vendor IDs
 // from  puck HID cpp and protocol md
@@ -57,3 +66,4 @@ impl TryFrom<u8> for Cmd {
         }
     }
 }
+
