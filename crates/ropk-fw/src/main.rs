@@ -21,6 +21,7 @@ bind_interrupts!(struct Irqs {
 type UsbDriver = Driver<'static, peripherals::USBD, HardwareVbusDetect>;
 
 static RX_BUF: StaticCell<[u8; 100]> = StaticCell::new();
+static TX_BUF: StaticCell<[u8; 100]> = StaticCell::new();
 static PUCK_USB_STRUCT: PuckUsbStruct = PuckUsbStruct::new();
 
 
@@ -41,7 +42,8 @@ async fn main(spawner: Spawner) {
     // let radio = p.RADIO;
     // use the usntable pac radio instead since i nee low leberl control
     let rx_buf: &'static mut [u8; 100] = RX_BUF.init([0; 100]);
-    let mut radio = ScRadio::new(embassy_nrf::pac::RADIO, rx_buf);
+    let tx_buf: &'static mut [u8; 100] = TX_BUF.init([0; 100]);
+    let mut radio = ScRadio::new(embassy_nrf::pac::RADIO, rx_buf, tx_buf);
     radio.config_radio(&SteamControllerRadioConfig::STEAM_CONTROLLER_RADIO_CONFIG);
     radio.start_sc_radio();
     defmt::info!("radio started");

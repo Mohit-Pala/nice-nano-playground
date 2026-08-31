@@ -746,6 +746,7 @@ version = "0.1.0"
 dependencies = [
  "defmt 1.1.1",
  "embassy-nrf",
+ "embassy-time 0.4.0",
 ]
 
 [[package]]

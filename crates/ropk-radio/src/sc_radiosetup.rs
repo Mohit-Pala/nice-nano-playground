@@ -1,15 +1,50 @@
 use embassy_nrf::pac::radio::{Radio, regs::Prefix0};
+use embassy_time::{Duration, Instant};
 
 use crate::{bitrev8, sc_radio_config::SteamControllerRadioConfig, sc_radio_data::ScRadioData};
 
 pub struct ScRadio {
     sc_radio: Radio,
-    rx_buf: &'static mut [u8] 
+    rx_buf: &'static mut [u8],
+    tx_buf: &'static mut [u8]
 }
 
 impl ScRadio {
-    pub fn new(sc_radio: Radio, rx_buf: &'static mut [u8]) -> Self {
-        Self { sc_radio, rx_buf }
+
+
+
+    // helper methods - move this to a new file
+
+    // from radio h
+    pub fn wait_disabled(&self) -> bool {
+        let start = Instant::now();
+        let timeout = Duration::from_micros(3000);
+
+        while self.sc_radio.events_disabled().read() == 0 {
+            if start.elapsed() >= timeout {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn set_channel(&mut self, frequency: u8) -> bool {
+        self.sc_radio.tasks_disable().write_value(1);
+        let ok = self.wait_disabled();
+        self.sc_radio.events_disabled().write_value(0);
+        if ok {
+            self.sc_radio.frequency().write(|w| w.set_frequency(frequency));
+        }
+        ok
+    }  
+
+
+
+
+
+
+    pub fn new(sc_radio: Radio, rx_buf: &'static mut [u8], tx_buf: &'static mut [u8]) -> Self {
+        Self { sc_radio, rx_buf, tx_buf }
     }
 
     pub fn config_radio(&mut self, sc_config: &SteamControllerRadioConfig) {
@@ -54,8 +89,26 @@ impl ScRadio {
         }
         self.sc_radio.events_end().write_value(0);
         let crc_ok = (self.sc_radio.crcstatus().read().0 & 1) != 0;
-        // i dont fuckn know why but dont use ; for default return path
         Some(ScRadioData::from_buf(self.rx_buf, crc_ok))
     }
+
+    // from rf link cpp line 194
+    pub fn transmit(&mut self, frame: &[u8]) -> bool {
+        self.tx_buf[..frame.len()].copy_from_slice(&frame);
+        self.sc_radio.packetptr().write_value(self.tx_buf.as_ptr() as u32);
+        self.sc_radio.shorts().write(|w| {
+            w.set_ready_start(true);
+            w.set_end_disable(true);
+        });
+        self.sc_radio.events_disabled().write_value(0);
+        self.sc_radio.tasks_txen().write_value(1);
+        let ok = self.wait_disabled();
+        self.sc_radio.events_disabled().write_value(0);
+        
+        // note: c code dont have any return type
+        return ok;
+    }
+
+
 }
 
