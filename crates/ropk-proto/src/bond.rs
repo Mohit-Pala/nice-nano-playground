@@ -18,7 +18,7 @@ impl Bond {
         self.0[PUCK_UUID_LEN..UUID_LEN].try_into().unwrap()
     }
     pub fn uuid(&self) -> &[u8; UUID_LEN] {
-        self.0.first_chunk().unwrap();
+        self.0.first_chunk().unwrap()
     }
     pub fn serial(&self) -> &[u8; SERIAL_LEN] {
         self.0.last_chunk().unwrap()
