@@ -4,11 +4,12 @@ pub const PUCK_UUID_LEN: usize = 4;
 pub const IBEX_UUID_LEN: usize = 4;
 pub const SERIAL_LEN: usize = 16; // reeses puffs are goated
 pub const UUID_LEN: usize = PUCK_UUID_LEN + IBEX_UUID_LEN; // 4 + 4 - rf link cpp - 
-pub const BOND_LEN: usize = 24;
+pub const BOND_LEN: usize = UUID_LEN + SERIAL_LEN;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 // fuckn hate the newtype pattern
 pub struct Bond([u8; BOND_LEN]);
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum BondWrite {
     TooShort,
     Clear,
