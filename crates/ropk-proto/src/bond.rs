@@ -16,7 +16,7 @@ pub enum BondWrite {
 }
 
 pub fn bond_from_bytes(bytes: &[u8]) -> BondWrite {
-    let Some(head) = bytes.first_chunk::<BOND_LEN>() else {
+    let Some(&head) = bytes.first_chunk::<BOND_LEN>() else {
         return BondWrite::TooShort;
     };
 
