@@ -9,8 +9,27 @@ pub const BOND_LEN: usize = 24;
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 // fuckn hate the newtype pattern
 pub struct Bond([u8; BOND_LEN]);
+pub enum BondWrite {
+    TooShort,
+    Clear,
+    Set(Bond)
+}
+
+pub fn bond_from_bytes(bytes: &[u8]) -> BondWrite {
+    let Some(head) = bytes.first_chunk::<BOND_LEN>() else {
+        return BondWrite::TooShort;
+    };
+
+    if head == [0; BOND_LEN] {
+        return BondWrite::Clear;
+    }
+    BondWrite::Set(Bond(head))
+}
 
 impl Bond {
+    pub fn as_bytes(&self) -> &[u8; BOND_LEN] {
+        &self.0
+    } 
     pub fn puck_uuid(&self) -> &[u8; PUCK_UUID_LEN] {
         self.0.first_chunk().unwrap()
     }
