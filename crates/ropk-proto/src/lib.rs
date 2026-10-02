@@ -1,4 +1,5 @@
 pub mod bond; //james 
+pub mod bytes;
 
 pub fn placeholder() -> u32 {
     1
