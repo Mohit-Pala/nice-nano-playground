@@ -1,5 +1,6 @@
 pub mod bond; //james 
 pub mod bytes;
+pub mod sc_controller_buttons;
 
 pub fn placeholder() -> u32 {
     1
