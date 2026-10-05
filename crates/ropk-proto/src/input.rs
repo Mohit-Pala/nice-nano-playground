@@ -14,15 +14,15 @@ pub fn trigger_u8(raw: u16) -> u8 {
 }
 
 pub struct Sticks {
-    lx: i16,
-    ly: i16,
-    rx:i16,
-    ry: i16,
+    pub lx: i16,
+    pub ly: i16,
+    pub rx:i16,
+    pub ry: i16,
 }
 
 pub struct Trackpad {
-    pub x,
-    pub y, 
-    pub press.
+    pub x: i16,
+    pub y: i16, 
+    pub press: i16,
 }
 
