@@ -1,5 +1,7 @@
 // from rflink cpp 
 
+use crate::input::ControllerInput;
+
 pub const REPORT_ID_INPUT_LEGACY: u8 = 0x45; // original 46 byte 
 pub const REPORT_ID_INPUT: u8 = 0x42; // Post july firmware - was called v2 in c code
 pub const REPORT_ID_STATUS: u8 = 0x43; // regaRDING BATTERTY 
@@ -37,3 +39,32 @@ pub const OFF_GYRO_X: usize = 0x28;
 pub const OFF_GYRO_Y: usize = 0x2A;
 pub const OFF_GYRO_Z: usize = 0x2C;
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct InputReport<'a> {
+    pub id: u8, // 0x45 or 0x42, use the right id
+    pub seq: u8,
+    pub input: ControllerInput,
+    pub raw: &'a [u8], // entire TLV value
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct StatusReport<'a> {
+    pub charge_state: u8, 
+    pub battery_pct: u8,
+    pub raw: &'a [u8],
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Report<'a> {
+    Input(InputReport<'a>),
+    Status(StatusReport<'a>),
+    StatusEvent(&'a [u8]),
+    Unknown { id: u8, raw: &'a [u8] },
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum ReportError {
+    Empty,
+    InputTooShort { id: u8, len: usize },
+    StatusTooShort { len: usize },
+}
