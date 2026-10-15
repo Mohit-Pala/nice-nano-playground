@@ -7,12 +7,14 @@ pub const TAG_REPORT: u8 = 0x6;
 pub const HEADER_LEN: usize = 0x2; // [len][tag]
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Tlv<'a> {
     pub tag: u8,
     pub value: &'a [u8],
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum TlvError {
     HeaderTruncated { at: usize },
     ValueTruncated { at: usize, len: u8, remaining: usize },

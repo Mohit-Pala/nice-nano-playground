@@ -4,6 +4,7 @@ use crate::sc_controller_buttons::Buttons;
 pub const LINK_TIMEOUT_MS: u64 = 300;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Triggers {
     pub l: u16,
     pub r: u16,
@@ -16,6 +17,7 @@ pub fn trigger_u8(raw: u16) -> u8 {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Sticks {
     pub lx: i16,
     pub ly: i16,
@@ -24,6 +26,7 @@ pub struct Sticks {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Trackpad {
     pub x: i16,
     pub y: i16,
@@ -31,6 +34,7 @@ pub struct Trackpad {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Imu {
     pub timestamp: u32,
     pub accel: [i16; 3],
@@ -38,6 +42,7 @@ pub struct Imu {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct ControllerInput {
     pub buttons: Buttons,
     pub triggers: Triggers,
@@ -80,6 +85,7 @@ impl ControllerInput {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Sample {
     pub input: ControllerInput,
     pub received_ms: u64,

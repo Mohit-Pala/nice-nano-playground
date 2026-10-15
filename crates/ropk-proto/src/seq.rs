@@ -1,11 +1,13 @@
 // state machine to diffbw fresh and repeat beacon polls
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct SeqTracker { 
     last: Option<u8> 
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Freshness { 
     Fresh { missed: u8 }, 
     Repeat 

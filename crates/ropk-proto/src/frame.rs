@@ -11,11 +11,13 @@ pub const OFF_F3_VERSION: usize = 4;
 pub const F3_MIN_LEN: usize = 5;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct InputFrame<'a> {
     body: &'a [u8],
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum FrameError {
     Empty,
     TooLong { len: usize },
@@ -23,12 +25,14 @@ pub enum FrameError {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum ReportItemError {
     Tlv(TlvError),
     Report(ReportError),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Reply<'a> {
     Input(InputFrame<'a>),
     Disconnect,

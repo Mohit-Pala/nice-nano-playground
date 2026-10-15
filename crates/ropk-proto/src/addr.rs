@@ -3,12 +3,14 @@
 use crate::bond::UUID_LEN;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct RadioAddr {
     pub base: [u8; 4],
     pub prefix: u8,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct AddrRegs {
     pub base0: u32,
     pub prefix0: u32,

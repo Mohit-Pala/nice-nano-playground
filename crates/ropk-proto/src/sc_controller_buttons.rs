@@ -7,7 +7,7 @@ pub const PHYSICAL_SC_BUTTONS_MASK:u32 = (1 << 30) - 1;
 
 #[repr(u32)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Button {
     // shit in a regular ass controller
 
@@ -182,5 +182,12 @@ impl<R: Into<Buttons>> BitAnd<R> for Buttons {
     type Output = Buttons;
     fn bitand(self, rhs: R) -> Buttons {
         Buttons(self.0 & rhs.into().0)
+    }
+}
+
+#[cfg(feature = "defmt")]
+impl defmt::Format for Buttons {
+    fn format(&self, fmt: defmt::Formatter) {
+        defmt::write!(fmt, "{=u32:#010x}", self.0);
     }
 }

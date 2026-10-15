@@ -7,9 +7,11 @@ pub const UUID_LEN: usize = PUCK_UUID_LEN + IBEX_UUID_LEN; // 4 + 4 - rf link cp
 pub const BOND_LEN: usize = UUID_LEN + SERIAL_LEN;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 // fuckn hate the newtype pattern
 pub struct Bond([u8; BOND_LEN]);
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum BondWrite {
     TooShort,
     Clear,

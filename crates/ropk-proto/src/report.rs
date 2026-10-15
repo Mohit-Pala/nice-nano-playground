@@ -41,6 +41,7 @@ pub const OFF_GYRO_Y: usize = 0x2A;
 pub const OFF_GYRO_Z: usize = 0x2C;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct InputReport<'a> {
     pub id: u8, // 0x45 or 0x42, use the right id
     pub seq: u8,
@@ -49,6 +50,7 @@ pub struct InputReport<'a> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct StatusReport<'a> {
     pub charge_state: u8, 
     pub battery_pct: u8,
@@ -56,6 +58,7 @@ pub struct StatusReport<'a> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Report<'a> {
     Input(InputReport<'a>),
     Status(StatusReport<'a>),
@@ -64,6 +67,7 @@ pub enum Report<'a> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum ReportError {
     Empty,
     InputTooShort { id: u8, len: usize },
