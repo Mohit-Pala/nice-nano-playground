@@ -8,3 +8,4 @@ description = "comms"
 embassy-nrf = { version = "0.6", features = ["nrf52840", "unstable-pac"] }
 embassy-time = { version = "0.4" }
 defmt = "1"
+ropk-proto = { path = "../ropk-proto" }
