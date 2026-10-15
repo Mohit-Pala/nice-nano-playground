@@ -6,6 +6,7 @@ use embassy_nrf::{
     bind_interrupts, peripherals, usb::Driver, usb::vbus_detect::HardwareVbusDetect,
 };
 use embassy_time::{Duration, Timer};
+use ropk_proto::addr::{DISCOVERY_ADDR, DISCOVERY_CHANNEL};
 use ropk_radio::{sc_radio_config::SteamControllerRadioConfig, sc_radiosetup::ScRadio};
 use ropk_usb::
     usb_id_helper::{PuckUsbStruct, build_sc_puck_usb}
@@ -44,7 +45,16 @@ async fn main(spawner: Spawner) {
     let rx_buf: &'static mut [u8; 100] = RX_BUF.init([0; 100]);
     let tx_buf: &'static mut [u8; 100] = TX_BUF.init([0; 100]);
     let mut radio = ScRadio::new(embassy_nrf::pac::RADIO, rx_buf, tx_buf);
-    radio.config_radio(&SteamControllerRadioConfig::STEAM_CONTROLLER_RADIO_CONFIG);
+    let disable_ok = radio.config_radio(&SteamControllerRadioConfig::STEAM_CONTROLLER_RADIO_CONFIG);
+    let want = DISCOVERY_ADDR.to_regs();
+    let got = radio.regs();
+    defmt::info!("disable_ok={} regs={}", disable_ok, got);
+    defmt::assert_eq!(got.base0, want.base0); // ibex
+    defmt::assert_eq!(got.prefix0, want.prefix0); // 0x08
+    defmt::assert_eq!(got.txaddress, 0);
+    defmt::assert_eq!(got.rxaddresses, 1);
+    defmt::assert_eq!(got.frequency, DISCOVERY_CHANNEL);
+
     radio.start_sc_radio();
     defmt::info!("radio started");
 

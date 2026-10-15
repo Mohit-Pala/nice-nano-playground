@@ -7,6 +7,17 @@ use crate::{sc_radio_config::SteamControllerRadioConfig, sc_radio_data::ScRadioD
 pub const TX_LOGICAL_ADDR: Txaddress = Txaddress(0);
 pub const RX_ADDRESSES_ADDR0: Rxaddresses = Rxaddresses(1 << 0);
 
+#[derive(defmt::Format, Debug, PartialEq, Eq)]
+pub struct RadioRegs {
+    pub base0: u32,
+    pub prefix0: u32,
+    pub txaddress: u32,
+    pub rxaddresses: u32,
+    pub frequency: u8,
+    pub pcnf0: u32,
+    pub pcnf1: u32,
+}
+
 pub struct ScRadio {
     sc_radio: Radio,
     rx_buf: &'static mut [u8],
@@ -32,39 +43,62 @@ impl ScRadio {
         return true;
     }
 
-    pub fn set_channel(&mut self, frequency: u8) -> bool {
+    fn disable(&mut self) -> bool {
+        self.sc_radio.events_disabled().write_value(0);
         self.sc_radio.tasks_disable().write_value(1);
         let ok = self.wait_disabled();
         self.sc_radio.events_disabled().write_value(0);
+        ok
+    }
+
+    fn write_addr_regs(&mut self, addr: RadioAddr) {
+        let regs = addr.to_regs();
+        self.sc_radio.base0().write_value(regs.base0);
+        self.sc_radio.prefix0().write_value(Prefix0(regs.prefix0));
+        self.sc_radio.txaddress().write_value(TX_LOGICAL_ADDR);
+        self.sc_radio.rxaddresses().write_value(RX_ADDRESSES_ADDR0);
+    }
+
+    pub fn set_channel(&mut self, frequency: u8) -> bool {
+        let ok = self.disable();
         if ok {
             self.sc_radio.frequency().write(|w| w.set_frequency(frequency));
-        }
-        ok
-    }  
-
-
-    pub fn set_addr(&mut self, addr: RadioAddr) -> bool {
-        self.sc_radio.tasks_disable().write_value(1);
-        let ok = self.wait_disabled();
-        self.sc_radio.events_disabled().write_value(0);
-        if ok {
-            let regs = addr.to_regs();
-            self.sc_radio.base0().write_value(regs.base0);
-            self.sc_radio.prefix0().write_value(Prefix0(regs.prefix0));
-            self.sc_radio.txaddress().write_value(TX_LOGICAL_ADDR);
-            self.sc_radio.rxaddresses().write_value(RX_ADDRESSES_ADDR0);
         }
         ok
     }
 
 
+    pub fn set_addr(&mut self, addr: RadioAddr) -> bool {
+        let ok = self.disable();
+        if ok {
+            self.write_addr_regs(addr);
+        }
+        ok
+    }
+
+    pub fn regs(&self) -> RadioRegs {
+        RadioRegs {
+            base0: self.sc_radio.base0().read(),
+            prefix0: self.sc_radio.prefix0().read().0,
+            txaddress: self.sc_radio.txaddress().read().0,
+            rxaddresses: self.sc_radio.rxaddresses().read().0,
+            frequency: self.sc_radio.frequency().read().frequency(),
+            pcnf0: self.sc_radio.pcnf0().read().0,
+            pcnf1: self.sc_radio.pcnf1().read().0,
+        }
+    }
 
     pub fn new(sc_radio: Radio, rx_buf: &'static mut [u8], tx_buf: &'static mut [u8]) -> Self {
         Self { sc_radio, rx_buf, tx_buf }
     }
 
-    pub fn config_radio(&mut self, sc_config: &SteamControllerRadioConfig) {
-        self.set_addr(sc_config.addr);
+    pub fn config_radio(&mut self, sc_config: &SteamControllerRadioConfig) -> bool {
+        let ok = self.disable();
+        if !ok {
+            defmt::warn!("config_radio: disable() timed out");
+        }
+
+        self.write_addr_regs(sc_config.addr);
 
         // from rfconfig method
         self.sc_radio.pcnf0().write_value(sc_config.pcnf0);
@@ -84,6 +118,8 @@ impl ScRadio {
             w.set_address_rssistart(true);
             w.set_disabled_rssistop(true);
         });
+
+        ok
     }   
 
     pub fn start_sc_radio(&self) {
