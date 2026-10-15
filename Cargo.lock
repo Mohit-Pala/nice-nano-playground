@@ -574,6 +574,9 @@ checksum = "76afc826de14238e6e8c374ddcc1fa19e374fd8dd986b0d2af0d02377261d83c"
 [[package]]
 name = "ropk-proto"
 version = "0.1.0"
+dependencies = [
+ "defmt",
+]
 
 [[package]]
 name = "ropk-radio"
@@ -591,6 +594,7 @@ version = "0.1.0"
 dependencies = [
  "defmt",
  "embassy-usb",
+ "ropk-proto",
  "static_cell",
 ]
 
