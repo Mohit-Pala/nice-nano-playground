@@ -1,3 +1,5 @@
+#![cfg_attr(not(test), no_std)]
+
 pub mod bond; //james 
 pub mod bytes;
 pub mod sc_controller_buttons;
