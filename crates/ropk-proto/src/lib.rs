@@ -4,4 +4,4 @@ pub mod sc_controller_buttons;
 pub mod input;
 pub mod tlv;
 pub mod report;
-  
+pub mod frame;
