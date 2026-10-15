@@ -1,7 +1,11 @@
-use embassy_nrf::pac::radio::{Radio, regs::Prefix0};
+use embassy_nrf::pac::radio::{Radio, regs::{Prefix0, Rxaddresses, Txaddress}};
 use embassy_time::{Duration, Instant};
+use ropk_proto::addr::RadioAddr;
 
-use crate::{bitrev8, sc_radio_config::SteamControllerRadioConfig, sc_radio_data::ScRadioData};
+use crate::{sc_radio_config::SteamControllerRadioConfig, sc_radio_data::ScRadioData};
+
+pub const TX_LOGICAL_ADDR: Txaddress = Txaddress(0);
+pub const RX_ADDRESSES_ADDR0: Rxaddresses = Rxaddresses(1 << 0);
 
 pub struct ScRadio {
     sc_radio: Radio,
@@ -39,7 +43,19 @@ impl ScRadio {
     }  
 
 
-
+    pub fn set_addr(&mut self, addr: RadioAddr) -> bool {
+        self.sc_radio.tasks_disable().write_value(1);
+        let ok = self.wait_disabled();
+        self.sc_radio.events_disabled().write_value(0);
+        if ok {
+            let regs = addr.to_regs();
+            self.sc_radio.base0().write_value(regs.base0);
+            self.sc_radio.prefix0().write_value(Prefix0(regs.prefix0));
+            self.sc_radio.txaddress().write_value(TX_LOGICAL_ADDR);
+            self.sc_radio.rxaddresses().write_value(RX_ADDRESSES_ADDR0);
+        }
+        ok
+    }
 
 
 
@@ -48,16 +64,7 @@ impl ScRadio {
     }
 
     pub fn config_radio(&mut self, sc_config: &SteamControllerRadioConfig) {
-        let rev_base: [u8; 4] = sc_config.base.map(bitrev8);
-        let base0: u32 = u32::from_be_bytes(rev_base);
-        let prefix0: Prefix0 = Prefix0(bitrev8(sc_config.prefix) as u32);
-        
-
-        // next few lines are doing what the rfSetAddr did
-        self.sc_radio.base0().write_value(base0);
-        self.sc_radio.prefix0().write_value(prefix0);
-        self.sc_radio.txaddress().write_value(sc_config.tx_addr);
-        self.sc_radio.rxaddresses().write_value(sc_config.rx_addr);
+        self.set_addr(sc_config.addr);
 
         // from rfconfig method
         self.sc_radio.pcnf0().write_value(sc_config.pcnf0);
