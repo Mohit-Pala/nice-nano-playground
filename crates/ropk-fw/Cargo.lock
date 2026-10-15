@@ -741,12 +741,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ropk-proto"
+version = "0.1.0"
+
+[[package]]
 name = "ropk-radio"
 version = "0.1.0"
 dependencies = [
  "defmt 1.1.1",
  "embassy-nrf",
  "embassy-time 0.4.0",
+ "ropk-proto",
 ]
 
 [[package]]
