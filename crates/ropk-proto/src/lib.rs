@@ -5,3 +5,4 @@ pub mod input;
 pub mod tlv;
 pub mod report;
 pub mod frame;
+pub mod seq;
