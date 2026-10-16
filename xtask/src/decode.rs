@@ -10,9 +10,9 @@
 
 use std::fmt::Write as _;
 
-use ropk_proto::frame::{parse_reply, Reply};
-use ropk_proto::input::{trigger_u8, ControllerInput, Imu, Trackpad};
-use ropk_proto::report::{parse_report, Report};
+use ropk_proto::frame::{Reply, parse_reply};
+use ropk_proto::input::{ControllerInput, Imu, Trackpad, trigger_u8};
+use ropk_proto::report::{Report, parse_report};
 use ropk_proto::sc_controller_buttons::Buttons;
 use ropk_proto::tlv::{TAG_BLOB, TAG_REPORT, TAG_STATUS};
 
@@ -74,13 +74,18 @@ pub fn strip_radio_header(raw: &[u8]) -> Result<(u8, &[u8]), String> {
     let len = raw[0] as usize;
     let avail = raw.len() - 2;
     if len > avail {
-        return Err(format!("LEN byte says {len} but only {avail} payload bytes follow"));
+        return Err(format!(
+            "LEN byte says {len} but only {avail} payload bytes follow"
+        ));
     }
     Ok((raw[1], &raw[2..2 + len]))
 }
 
 fn hex(b: &[u8]) -> String {
-    b.iter().map(|x| format!("{x:02x}")).collect::<Vec<_>>().join(" ")
+    b.iter()
+        .map(|x| format!("{x:02x}"))
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn rtype_name(rtype: u8) -> &'static str {
@@ -164,7 +169,11 @@ pub fn describe(payload: &[u8]) -> String {
             return out;
         }
     };
-    let alive = if reply.is_link_alive() { "link alive" } else { "NOT ours" };
+    let alive = if reply.is_link_alive() {
+        "link alive"
+    } else {
+        "NOT ours"
+    };
 
     match reply {
         Reply::NotOurs { rtype } => {
@@ -173,6 +182,9 @@ pub fn describe(payload: &[u8]) -> String {
                 "  {rtype:#04x} {}  ({alive}: another puck's traffic)",
                 rtype_name(rtype)
             );
+            if rtype == 0xE1 {
+                e1_block(&mut out, payload);
+            }
         }
         Reply::Disconnect => {
             let _ = writeln!(out, "  F2 disconnect / power-off  ({alive})");
@@ -181,7 +193,11 @@ pub fn describe(payload: &[u8]) -> String {
             let _ = writeln!(out, "  F3 status  version {version:#04x}  ({alive})");
         }
         Reply::OtherReply { rtype, raw } => {
-            let _ = writeln!(out, "  {rtype:#04x} undecoded F-type  ({alive})  {}", hex(raw));
+            let _ = writeln!(
+                out,
+                "  {rtype:#04x} undecoded F-type  ({alive})  {}",
+                hex(raw)
+            );
         }
         Reply::Input(frame) => {
             let _ = writeln!(out, "  F1 input  ({alive})");
@@ -219,6 +235,62 @@ pub fn describe(payload: &[u8]) -> String {
         }
     }
     out
+}
+
+/// E1 host frame, payload indices (PROTOCOL.md §6 minus the [LEN][S1] header):
+///   [0] E1  [1..5] proteus_uuid LE  [5..9] ibex_uuid LE  [9] session channel
+///   [10..13] zero  [13..17] session base (stored form)  [17] session prefix
+pub const E1_LEN: usize = 18;
+
+fn e1_block(out: &mut String, p: &[u8]) {
+    if p.len() < E1_LEN {
+        let _ = writeln!(
+            out,
+            "      E1 too short for host-frame layout ({} < {E1_LEN} B)",
+            p.len()
+        );
+        return;
+    }
+    let le = |i: usize| u32::from_le_bytes([p[i], p[i + 1], p[i + 2], p[i + 3]]);
+    let _ = writeln!(
+        out,
+        "      proteus_uuid    {:#010x}  (bytes {})  = bond rec[0..4]",
+        le(1),
+        hex(&p[1..5])
+    );
+    let _ = writeln!(
+        out,
+        "      ibex_uuid       {:#010x}  (bytes {})  = bond rec[4..8]",
+        le(5),
+        hex(&p[5..9])
+    );
+    let _ = writeln!(
+        out,
+        "      session channel {}  ({} MHz)",
+        p[9],
+        2400 + p[9] as u32
+    );
+    let _ = writeln!(
+        out,
+        "      session base    {}  (stored form; bitrev each byte for on-air)",
+        hex(&p[13..17])
+    );
+    let _ = writeln!(out, "      session prefix  {:#04x}", p[17]);
+    if p[10..13] != [0, 0, 0] {
+        let _ = writeln!(
+            out,
+            "      note: bytes 10..13 = {} (expected 00 00 00)",
+            hex(&p[10..13])
+        );
+    }
+    if p.len() > E1_LEN {
+        let _ = writeln!(
+            out,
+            "      note: {} trailing byte(s) {}",
+            p.len() - E1_LEN,
+            hex(&p[E1_LEN..])
+        );
+    }
 }
 
 fn report_block(out: &mut String, value: &[u8]) {
@@ -272,7 +344,12 @@ pub fn decode_text(text: &str, framing: Framing) -> (String, usize, bool) {
             Framing::Payload => &bytes,
             Framing::Raw => match strip_radio_header(&bytes) {
                 Ok((s1, p)) => {
-                    let _ = writeln!(out, "radio header: LEN {}  S1 {s1:#04x} (PID {})", p.len(), (s1 >> 1) & 3);
+                    let _ = writeln!(
+                        out,
+                        "radio header: LEN {}  S1 {s1:#04x} (PID {})",
+                        p.len(),
+                        (s1 >> 1) & 3
+                    );
                     p
                 }
                 Err(e) => {
@@ -325,7 +402,10 @@ mod tests {
 
     #[test]
     fn raw_header_stripped_like_firmware() {
-        assert_eq!(strip_radio_header(&[3, 0x02, 0xF2, 0, 0]).unwrap(), (0x02, &[0xF2, 0, 0][..]));
+        assert_eq!(
+            strip_radio_header(&[3, 0x02, 0xF2, 0, 0]).unwrap(),
+            (0x02, &[0xF2, 0, 0][..])
+        );
         assert!(strip_radio_header(&[5, 0, 0xF2]).is_err());
         assert!(strip_radio_header(&[1]).is_err());
     }
@@ -348,6 +428,22 @@ mod tests {
         assert!(describe(&[0xF3, 1]).contains("FRAME ERROR"));
         assert!(describe(&[0xF1, 9, 6, 0x45]).contains("TLV ERROR"));
         assert!(describe(&[0xE1, 0]).contains("NOT ours"));
+    }
+
+    #[test]
+    fn e1_fields_are_broken_out() {
+        let p = [
+            0xE1, 0x78, 0x56, 0x34, 0x12, 0xEF, 0xCD, 0xAB, 0x90, 0x2A, 0, 0, 0, 0x11, 0x22, 0x33,
+            0x44, 0x55,
+        ];
+        let d = describe(&p);
+        assert!(d.contains("proteus_uuid    0x12345678"), "{d}");
+        assert!(d.contains("ibex_uuid       0x90abcdef"), "{d}");
+        assert!(d.contains("session channel 42  (2442 MHz)"), "{d}");
+        assert!(d.contains("session base    11 22 33 44"), "{d}");
+        assert!(d.contains("session prefix  0x55"), "{d}");
+        assert!(!d.contains("note:"), "{d}");
+        assert!(describe(&p[..10]).contains("too short"));
     }
 
     #[test]
