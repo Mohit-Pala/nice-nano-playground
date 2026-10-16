@@ -1,0 +1,7 @@
+use core::sync::atomic::{compiler_fence, Ordering};
+
+compiler_fence(Ordering::Acquire);
+
+
+// thanks claude 
+Nothing in poll() stops the compiler from reading rx_buf[0] or doing the copy_from_slice before the volatile read of events_end, or from moving the copy after the tasks_start write
