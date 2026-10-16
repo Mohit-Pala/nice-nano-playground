@@ -9,3 +9,9 @@ embassy-usb = "0.6.0"
 defmt = "1"
 static_cell = "2.1.1"
 ropk-proto = { path = "../ropk-proto" }
+
+
+# tests
+[lib]
+test = false
+doctest = false
