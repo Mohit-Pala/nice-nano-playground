@@ -1,11 +1,11 @@
 use static_cell::StaticCell;
 use embassy_usb::{Builder, UsbDevice, class::hid::{Config as HidConfig, HidBootProtocol, HidReaderWriter, HidSubclass, State as HidState}, driver::Driver};
-use crate::{sc_default_descriptor::PUCK_HID_DESC, sc_puck_bond::ScPuckSlot, vars::{DUMMY_USB_CLASS, DUMMY_USB_PROTOCOL, DUMMY_USB_SUBCLASS, MAX_PCKT_SIZE}};
+use crate::{sc_default_descriptor::PUCK_HID_DESC, sc_puck_bond::ScPuckSlot, vars::{DUMMY_USB_CLASS, DUMMY_USB_PROTOCOL, DUMMY_USB_SUBCLASS}};
 
 pub struct UsbDescLens {
-    conf_desc_len: u16,
-    bos_desc_len: u16,
-    ctrl_buf_len: u16
+    pub conf_desc_len: u16,
+    pub bos_desc_len: u16,
+    pub ctrl_buf_len: u16,
 }
 
 impl UsbDescLens {

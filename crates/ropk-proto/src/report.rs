@@ -129,7 +129,7 @@ pub fn parse_input(value: &[u8]) -> Result<InputReport<'_>, ReportError> {
     if value.len() < INPUT_MIN_LEN {
         return Err(ReportError::InputTooShort { id, len: value.len() });
     }
-    let seq = value.get(OFF_SEQ).copied().unwrap_or(0);
+    let seq = value[OFF_SEQ];
     let input = decode_buttons_triggers_trackpads(value).ok_or(ReportError::InputTooShort { id, len: value.len() })?;
 
     Ok(InputReport {
