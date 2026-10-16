@@ -8,13 +8,21 @@ pub struct ScRadioData<'a> {
 
 impl<'a> ScRadioData<'a> {
     pub fn from_buf(buf: &'a [u8], crc_ok: bool) -> Self {
+        // header size is 2, anything lesser than 2 cannot contain a header
+        if buf.len() < 2 {
+            return Self {
+                crc_ok,
+                s1_pid: 0,
+                payload: &[],
+            };
+        }
         let buf_len = buf[0] as usize;
         // min of payload len vs 100 - 2
         let payload_len = buf_len.min(buf.len().saturating_sub(2));
         Self {
             crc_ok,
             s1_pid: buf[1],
-            payload: &buf[2..2 + payload_len] // array slice from idx 2 to 2 + 17? 
+            payload: &buf[2..2 + payload_len], // array slice from idx 2 to 2 + 17? 
         }
     }
 }

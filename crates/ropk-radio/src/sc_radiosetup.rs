@@ -126,13 +126,16 @@ impl ScRadio {
         self.sc_radio.tasks_rxen().write_value(1);
     }
 
-    pub fn poll(&self) -> Option<ScRadioData<'_>> {
+    pub fn poll<'a>(&self, buf: &'a mut [u8; 100]) -> Option<ScRadioData<'a>> {
         if self.sc_radio.events_end().read() == 0 {
             return None;
         }
         self.sc_radio.events_end().write_value(0);
         let crc_ok = (self.sc_radio.crcstatus().read().0 & 1) != 0;
-        Some(ScRadioData::from_buf(self.rx_buf, crc_ok))
+        let len = self.rx_buf[0] as usize;
+        let copy_len = (2 + len).min(self.rx_buf.len()).min(buf.len());
+        buf[..copy_len].copy_from_slice(&self.rx_buf[..copy_len]);
+        Some(ScRadioData::from_buf(&buf[..copy_len], crc_ok))
     }
 
     // from rf link cpp line 194
@@ -154,4 +157,3 @@ impl ScRadio {
 
 
 }
-
