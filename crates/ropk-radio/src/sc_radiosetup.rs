@@ -1,3 +1,4 @@
+use core::sync::atomic::{compiler_fence, Ordering};
 use embassy_nrf::pac::radio::{Radio, regs::{Prefix0, Rxaddresses, Txaddress}};
 use embassy_time::{Duration, Instant};
 use ropk_proto::addr::RadioAddr;
@@ -108,13 +109,13 @@ impl ScRadio {
         self.sc_radio.crcinit().write_value(sc_config.crcinit);
         
         self.sc_radio.mode().write(|w| w.set_mode(sc_config.mode));
+        self.sc_radio.txpower().write(|w| w.set_txpower(sc_config.tx_power));
         self.sc_radio.frequency().write(|w| w.set_frequency(sc_config.frequency));
         self.sc_radio.packetptr().write_value(self.rx_buf.as_ptr() as u32);
 
         // shorts
         self.sc_radio.shorts().write(|w| {
             w.set_ready_start(true);
-            w.set_end_start(true);
             w.set_address_rssistart(true);
             w.set_disabled_rssistop(true);
         });
@@ -126,15 +127,18 @@ impl ScRadio {
         self.sc_radio.tasks_rxen().write_value(1);
     }
 
-    pub fn poll<'a>(&self, buf: &'a mut [u8; 100]) -> Option<ScRadioData<'a>> {
+    pub fn poll<'a>(&self, buf: &'a mut [u8]) -> Option<ScRadioData<'a>> {
         if self.sc_radio.events_end().read() == 0 {
             return None;
         }
+        compiler_fence(Ordering::Acquire); // DMA's writes are visible before we read rx_buf
         self.sc_radio.events_end().write_value(0);
         let crc_ok = (self.sc_radio.crcstatus().read().0 & 1) != 0;
         let len = self.rx_buf[0] as usize;
         let copy_len = (2 + len).min(self.rx_buf.len()).min(buf.len());
         buf[..copy_len].copy_from_slice(&self.rx_buf[..copy_len]);
+        compiler_fence(Ordering::Release); // our reads of rx_buf finish before DMA restarts
+        self.sc_radio.tasks_start().write_value(1);
         Some(ScRadioData::from_buf(&buf[..copy_len], crc_ok))
     }
 
@@ -147,6 +151,7 @@ impl ScRadio {
             w.set_end_disable(true);
         });
         self.sc_radio.events_disabled().write_value(0);
+        compiler_fence(Ordering::Release); // frame is fully written before DMA reads tx_buf
         self.sc_radio.tasks_txen().write_value(1);
         let ok = self.wait_disabled();
         self.sc_radio.events_disabled().write_value(0);
