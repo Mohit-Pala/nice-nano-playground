@@ -7,3 +7,11 @@ e1 01 02 03 04 05 06 07 08 02 00 00 00 11 22 33 44 55
 
 # bare E3 input poll
 e3 00
+
+# REAL capture 2026-10-15: genuine Valve puck, controller OFF, discovery ch2,
+# crc ok. 8 consecutive beacons ~4.03 ms apart were byte-identical (one bonded
+# slot, no rotation); only S1 changed, cycling 0x02 0x04 0x06 0x00 (PID 1,2,3,0,
+# no-ack bit clear). Layout matches PROTOCOL.md §6 exactly: 18 B, bytes 10..13
+# zero. proteus 0x63513e7f, ibex 0x81f57117, session ch 6, base 65 1b ad f0
+# (stored form), prefix 0x14.
+e1 7f 3e 51 63 17 71 f5 81 06 00 00 00 65 1b ad f0 14
