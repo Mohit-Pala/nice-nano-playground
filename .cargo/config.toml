@@ -1,0 +1,3 @@
+[alias]
+# `cargo xtask decode ...`, `cargo xtask uf2` from the workspace root
+xtask = "run -q -p xtask --"

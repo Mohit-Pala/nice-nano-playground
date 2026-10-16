@@ -1,0 +1,9 @@
+# E-type traffic: what a listen-only puck on "ibex" ch2 hears from OTHER pucks.
+# Must parse as NotOurs and never mark the link alive. Source: synthetic,
+# E1 layout from PROTOCOL.md §6 (with the [LEN][S1] header stripped).
+
+# E1 host frame / discovery beacon: [E1][proteus 4][ibex 4][ch][0 0 0][base 4][prefix]
+e1 01 02 03 04 05 06 07 08 02 00 00 00 11 22 33 44 55
+
+# bare E3 input poll
+e3 00

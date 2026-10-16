@@ -1,0 +1,7 @@
+# Non-input controller replies. Source: synthetic, layouts from rf_link.cpp.
+
+# F2: controller disconnecting / powering off
+f2
+
+# F3: status/version reply to E7, version at payload[4] (C: rfrx[6])
+f3 00 00 00 17

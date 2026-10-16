@@ -460,3 +460,51 @@ fn arbitrary_payloads_never_panic_and_terminate() {
         }
     }
 }
+
+// ---- T003: every cut point of a whole frame ----
+
+// A realistic F1 (status field + full 0x45 + 0x43 battery) truncated at every
+// length. The TLV walker has its own cut-point test; this one proves the whole
+// parse_reply -> reports() path holds up the same way.
+#[test]
+fn t003_every_cut_point_of_full_frame() {
+    let mut full_45 = input_report(0x45, 9, 0x0000_0201);
+    full_45.resize(46, 0x11);
+    let p = f1(&[
+        tlv(TAG_STATUS, &[1, 2, 3, 4]),
+        tlv(TAG_REPORT, &full_45),
+        tlv(TAG_REPORT, &[0x43, 2, 87]),
+    ]);
+    assert_eq!(p.len(), 60);
+    let full: Vec<Report> = input_frame(&p).reports().map(Result::unwrap).collect();
+    assert_eq!(full.len(), 2);
+
+    // record boundaries inside the payload: after rtype, after each TLV
+    let boundaries = [1, 7, 55, 60];
+
+    assert_eq!(parse_reply(&p[..0]), Err(FrameError::Empty));
+    for cut in 1..=p.len() {
+        let items: Vec<_> = input_frame(&p[..cut]).reports().collect();
+        let oks: Vec<Report> = items.iter().filter_map(|r| r.ok()).collect();
+
+        // whatever decodes is exactly what the full frame decodes, in order
+        assert_eq!(oks[..], full[..oks.len()], "cut={cut}");
+
+        // a cut inside a record is a TLV error; it can never surface as a
+        // short-but-"valid" report
+        let tlv_errs = items
+            .iter()
+            .filter(|r| matches!(r, Err(ReportItemError::Tlv(_))))
+            .count();
+        let report_errs = items
+            .iter()
+            .filter(|r| matches!(r, Err(ReportItemError::Report(_))))
+            .count();
+        assert_eq!(report_errs, 0, "cut={cut}");
+        assert!(tlv_errs <= 1, "cut={cut}");
+        if tlv_errs == 1 {
+            assert!(items.last().unwrap().is_err(), "cut={cut}: error not last");
+        }
+        assert_eq!(tlv_errs == 0, boundaries.contains(&cut), "cut={cut}");
+    }
+}

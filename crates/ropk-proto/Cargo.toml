@@ -11,3 +11,5 @@ defmt = { version = "1", optional = true }
 defmt = ["dep:defmt"]
 
 [dev-dependencies]
+# host-only property tests (tests/fuzz.rs); never linked into firmware
+proptest = "1"

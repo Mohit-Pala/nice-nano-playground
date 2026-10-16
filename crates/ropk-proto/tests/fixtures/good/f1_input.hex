@@ -1,0 +1,28 @@
+# F1 replies carrying input reports. One payload per line: [rtype][body..]
+# (= ScRadioData.payload, i.e. radio RAM minus [LEN][S1]).
+# Source: synthetic, same field values as tests/report.rs report_45():
+#   buttons A|Start|RTrackpadTouch|RTrackpadClick, LT 0x1234, RT 0x8000,
+#   sticks L(-1001,1002) R(-1003,1004), pads L(-2001,2002,2003) R(-3001,3002,3003),
+#   imu ts 0xdeadbeef accel [101,-102,4096] gyro [-201,202,-203]
+# `#! inputs N` = the next payload must yield exactly N input reports.
+
+# full 46-byte 0x45
+#! inputs 1
+f1 2e 06 45 5a 01 40 60 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b ef be ad de 65 00 9a ff 00 10 37 ff ca 00 35 ff
+
+# 0x45 at rest: nothing held, 1 g on accel z
+#! inputs 1
+f1 2e 06 45 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 e8 03 00 00 00 00 00 00 00 10 00 00 00 00 00 00
+
+# 54-byte 0x42 (post-2026-07 firmware): same first 46 bytes, grip bits 28/29
+# set, 8-byte tail 7fff + zeros
+#! inputs 1
+f1 36 06 42 5a 01 40 60 30 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b ef be ad de 65 00 9a ff 00 10 37 ff ca 00 35 ff ff 7f 00 00 00 00 00 00
+
+# 30-byte minimum 0x45: input decodes, IMU is None
+#! inputs 1
+f1 1e 06 45 07 01 00 00 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b
+
+# two inputs in one F1 (seq 7 then 8); full 46-byte reports can't both fit in 96
+#! inputs 2
+f1 1e 06 45 07 01 00 00 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b 1e 06 45 08 02 00 00 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b

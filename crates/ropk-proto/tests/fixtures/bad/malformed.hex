@@ -1,0 +1,25 @@
+# Malformed payloads. Each must produce at least one decode error and must
+# never panic or yield input from bytes that weren't received.
+# Add minimized fuzz/proptest failures here as permanent regressions.
+# Source: synthetic.
+
+# T006: valid 30-byte 0x45, then a TLV claiming 40 bytes with only 2 present
+f1 1e 06 45 01 00 00 00 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b 28 06 45 02
+
+# report too short: 0x45 with only 10 bytes (needs 30)
+f1 0a 06 45 01 00 00 00 00 34 12 00 80
+
+# T008: F3 shorter than F3_MIN_LEN (version byte missing)
+f3 01
+
+# 97 bytes: over MAX_PAYLOAD_LEN (96)
+f1 aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa aa
+
+# T004: header claims a full 46-byte report, only 12 bytes arrived
+f1 2e 06 45 01 00 00 00 00 34 12 00 80 17 fc
+
+# lone trailing byte after a valid record (HeaderTruncated)
+f1 1e 06 45 01 00 00 00 00 34 12 00 80 17 fc ea 03 15 fc ec 03 2f f8 d2 07 d3 07 47 f4 ba 0b bb 0b 05
+
+# 0x43 battery report missing the battery byte
+f1 02 06 43 02
