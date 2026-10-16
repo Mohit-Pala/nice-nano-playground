@@ -91,7 +91,9 @@ fn hex(b: &[u8]) -> String {
 fn rtype_name(rtype: u8) -> &'static str {
     match rtype {
         0xE1 => "E1 host frame / discovery beacon",
-        0xE2 | 0xE3 => "E3 input poll",
+        // a genuine puck polls its session with a bare 1-byte E2
+        0xE2 => "E2 session poll (real puck)",
+        0xE3 => "E3 input poll",
         0xE7 => "E7 wake / version",
         0xF0..=0xFF => "F-type",
         _ => "unknown",

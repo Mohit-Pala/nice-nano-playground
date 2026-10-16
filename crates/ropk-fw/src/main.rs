@@ -80,7 +80,6 @@ async fn main(spawner: Spawner) {
 
     let mut rx_copy = [0u8; 100];
     let mut stats = Stats::default();
-    let mut e1_captured: u8 = 0;
     let mut seq = SeqTracker::new();
     let mut last_stats = Instant::now();
 
@@ -128,10 +127,6 @@ async fn main(spawner: Spawner) {
                             }
                         }
                     } else {
-                        if matches!(reply, Reply::NotOurs { rtype: 0xE1 }) && e1_captured < 8 {
-                            e1_captured += 1;
-                            defmt::info!("Payload  : {=[u8]:02x} s1={=u8:#04x}", rx.payload, rx.s1_pid);
-                        }
                         defmt::info!("{}", reply);
                     }
                 }
