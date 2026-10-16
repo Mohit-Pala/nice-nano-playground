@@ -5,7 +5,6 @@ use embassy_executor::Spawner;
 use embassy_nrf::{
     bind_interrupts, peripherals, usb::Driver, usb::vbus_detect::HardwareVbusDetect,
 };
-use embassy_time::{Duration, Timer};
 use ropk_proto::addr::{DISCOVERY_ADDR, DISCOVERY_CHANNEL};
 use ropk_radio::{sc_radio_config::SteamControllerRadioConfig, sc_radiosetup::ScRadio};
 use ropk_usb::
@@ -62,8 +61,9 @@ async fn main(spawner: Spawner) {
     let usb_device = build_sc_puck_usb(driver, &PUCK_USB_STRUCT);
     spawner.spawn(usb_task(usb_device)).unwrap();
 
+    let mut rx_copy = [0u8; 100];
     loop {
-        if let Some(sc_radio_data) = radio.poll() {
+        if let Some(sc_radio_data) = radio.poll(&mut rx_copy) {
             defmt::info!("Log start");
             defmt::info!("CRC OK   : {}", sc_radio_data.crc_ok);
             defmt::info!("S1/PID   : 0x{:02x}", sc_radio_data.s1_pid);
@@ -71,6 +71,6 @@ async fn main(spawner: Spawner) {
             defmt::info!("Payload  : {=[u8]:02x}", sc_radio_data.payload);
             defmt::info!("Log end");
         }
-        Timer::after(Duration::from_millis(1)).await;
+        embassy_futures::yield_now().await;
     }
 }

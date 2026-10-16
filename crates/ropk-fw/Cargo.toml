@@ -25,6 +25,7 @@ embassy-usb = { version = "0.6.0", features = ["defmt", "usbd-hid", "max-interfa
 usbd-hid = { version = "0.10.0", default-features = false }
 static_cell = "2.1.1"
 heapless = "0.9.3"
+embassy-futures = "0.1"
 
 [profile.release]
 debug = 2
