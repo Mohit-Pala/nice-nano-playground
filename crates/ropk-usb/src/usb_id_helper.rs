@@ -1,6 +1,30 @@
 use static_cell::StaticCell;
-use embassy_usb::{Builder, UsbDevice, class::hid::{Config as HidConfig, HidBootProtocol, HidReaderWriter, HidSubclass, State as HidState}, driver::Driver};
-use crate::{sc_default_descriptor::PUCK_HID_DESC, sc_puck_bond::ScPuckSlot, vars::{DUMMY_USB_CLASS, DUMMY_USB_PROTOCOL, DUMMY_USB_SUBCLASS}};
+use embassy_usb::{
+    Builder, Handler, UsbDevice,
+    class::hid::{Config as HidConfig, HidBootProtocol, HidReaderWriter, HidSubclass, State as HidState},
+    driver::Driver,
+    types::StringIndex,
+};
+use crate::{
+    sc_default_descriptor::PUCK_HID_DESC,
+    sc_puck_bond::ScPuckSlot,
+    vars::{DEFAULT_IDENTITY_STRING, DUMMY_USB_CLASS, DUMMY_USB_PROTOCOL, DUMMY_USB_SUBCLASS},
+};
+
+pub struct IdentityHandler {
+    string_idx: StringIndex,
+    identity: &'static str,
+}
+
+impl Handler for IdentityHandler {
+    fn get_string(&mut self, index: StringIndex, _lang_id: u16) -> Option<&str> {
+        if index == self.string_idx {
+            Some(self.identity)
+        } else {
+            None
+        }
+    }
+}
 
 pub struct UsbDescLens {
     pub conf_desc_len: u16,
@@ -89,6 +113,7 @@ pub struct PuckUsbStruct {
     bos_desc: StaticCell<[u8; 256]>,
     control_buf: StaticCell<[u8; 128]>,
     slots: [PuckSlotStruct; 4],
+    identity: StaticCell<IdentityHandler>,
 }
 
 impl PuckUsbStruct {
@@ -103,6 +128,7 @@ impl PuckUsbStruct {
                 PuckSlotStruct::new(),
                 PuckSlotStruct::new(),
             ],
+            identity: StaticCell::new(),
         }
     }
 }
@@ -114,6 +140,7 @@ pub struct PuckUsbBuilder<DihRiver: Driver<'static>> {
     // dih-river 😭😭😭 
     // todo change ts before commmitting lmao 
     puck_builder: Builder<'static, DihRiver>,
+    storage: &'static PuckUsbStruct,
 }
 
 impl <DihRiver: Driver<'static>> PuckUsbBuilder<DihRiver> {
@@ -127,16 +154,35 @@ impl <DihRiver: Driver<'static>> PuckUsbBuilder<DihRiver> {
             &mut [],
             storage.control_buf.init([0; 128]),
         );
-        return Self { puck_builder };
+        return Self { puck_builder, storage };
     }
 
     // 2 padding dummies
     // needeed for slots 2-5 to be pop
     pub fn add_dummy_slots(&mut self) -> &mut Self {
-        for _ in 0..2 {
+        self.add_dummy_slots_with_identity(DEFAULT_IDENTITY_STRING)
+    }
+
+    pub fn add_dummy_slots_with_identity(&mut self, identity: &'static str) -> &mut Self {
+        let idx = self.puck_builder.string();
+        let handler = self.storage.identity.init(IdentityHandler {
+            string_idx: idx,
+            identity,
+        });
+        self.puck_builder.handler(handler);
+
+        {
             let mut func = self.puck_builder.function(DUMMY_USB_CLASS, DUMMY_USB_SUBCLASS, DUMMY_USB_PROTOCOL);
-            let _iface = func.interface();
+            let mut iface = func.interface();
+            let _alt = iface.alt_setting(DUMMY_USB_CLASS, DUMMY_USB_SUBCLASS, DUMMY_USB_PROTOCOL, Some(idx));
         }
+
+        {
+            let mut func = self.puck_builder.function(DUMMY_USB_CLASS, DUMMY_USB_SUBCLASS, DUMMY_USB_PROTOCOL);
+            let mut iface = func.interface();
+            let _alt = iface.alt_setting(DUMMY_USB_CLASS, DUMMY_USB_SUBCLASS, DUMMY_USB_PROTOCOL, None);
+        }
+
         return self;
     }
 

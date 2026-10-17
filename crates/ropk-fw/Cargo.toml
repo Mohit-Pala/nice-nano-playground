@@ -27,7 +27,7 @@ defmt = "1"
 defmt-rtt = "1"
 panic-probe = { version = "1", features = ["print-defmt"], optional = true }
 panic-reset = { version = "0.1", optional = true }
-embassy-usb = { version = "0.6.0", features = ["defmt", "usbd-hid", "max-interface-count-8"] }
+embassy-usb = { version = "0.6.0", features = ["defmt", "usbd-hid", "max-interface-count-8", "max-handler-count-8"] }
 usbd-hid = { version = "0.10.0", default-features = false }
 static_cell = "2.1.1"
 heapless = "0.9.3"

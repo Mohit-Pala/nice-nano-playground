@@ -7,6 +7,7 @@ pub const CONTROL_BUF_LEN: u16 = 128;
 pub const DUMMY_USB_CLASS: u8 = 0xFF;
 pub const DUMMY_USB_SUBCLASS: u8 = 0x00;
 pub const DUMMY_USB_PROTOCOL: u8 = 0x00;
+pub const DEFAULT_IDENTITY_STRING: &str = "ropk-fw";
 
 // affliction 
 // i see that spoiled brat - infernus the goat
