@@ -17,7 +17,11 @@ use ropk_usb::
     usb_id_helper::{PuckUsbStruct, build_sc_puck_usb}
 ;
 use static_cell::StaticCell;
-use {defmt_rtt as _, panic_probe as _};
+use defmt_rtt as _;
+#[cfg(feature = "debug")]
+use panic_probe as _;
+#[cfg(feature = "uf2")]
+use panic_reset as _;
 
 #[derive(Default)]
 struct Stats {

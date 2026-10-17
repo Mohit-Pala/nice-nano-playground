@@ -7,6 +7,7 @@ mod decode;
 
 const APP_BASE: &str = "0x26000";
 const FAMILY: &str = "NRF52840";
+const UF2_FEATURES: &[&str] = &["--no-default-features", "--features", "uf2"];
 
 // can go up to 500, chip itself is working fine but going above 500 seems to depend upon the quality of solder and i fucking suck at this shit
 // this should prob never be used unless running the debugger
@@ -57,12 +58,14 @@ fn cmd_uf2(release: bool, output: Option<PathBuf>) -> Result<(), String> {
     run(Command::new("cargo")
         .arg("build")
         .args(profile_flag)
+        .args(UF2_FEATURES)
         .current_dir(&fw_dir))?;
 
     println!("Objcopy - {} -----", bin_path.display());
     run(Command::new("cargo")
         .arg("objcopy")
         .args(profile_flag)
+        .args(UF2_FEATURES)
         .arg("--")
         .args(["-O", "binary"])
         .arg(&bin_path)

@@ -1,0 +1,12 @@
+plug in the nice nano or the nrf 52840
+
+short the gpio pins to reset it / enter bootloader mode if it doesnt enumerate as a usb devive automatically
+
+Open the uf2 text file
+
+you should see sum like -
+SoftDevice: S140 version 6.1.1
+
+if its s140 6.1.1 use memory base 0x26000
+
+if its s140 7xx use memory base 0x27000
