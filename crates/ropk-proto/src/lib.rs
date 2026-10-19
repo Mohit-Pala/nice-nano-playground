@@ -9,3 +9,5 @@ pub mod report;
 pub mod frame;
 pub mod seq;
 pub mod addr;
+
+pub mod hid;
