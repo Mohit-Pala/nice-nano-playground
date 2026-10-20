@@ -5,8 +5,8 @@ use embassy_usb::{
     driver::Driver,
     types::StringIndex,
 };
+use ropk_proto::hid::descriptor::PUCK_HID_DESC;
 use crate::{
-    sc_default_descriptor::PUCK_HID_DESC,
     sc_puck_bond::ScPuckSlot,
     vars::{DEFAULT_IDENTITY_STRING, DUMMY_USB_CLASS, DUMMY_USB_PROTOCOL, DUMMY_USB_SUBCLASS},
 };
