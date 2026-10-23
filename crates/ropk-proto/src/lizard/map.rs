@@ -25,7 +25,7 @@ pub enum Output {
     KbdChord {
         modifiers: Modifiers,
         keys: [Key; MAX_KEYS],
-    }, // LZ_OUT_KBD_CHORD
+    },                                                                 // LZ_OUT_KBD_CHORD
     MouseButton(MouseButtons),                                      // LZ_OUT_MOUSE_BTN
     MouseAxis(MouseSource),                                         // LZ_OUT_MOUSE_AXIS
     Scroll(ScrollSource),                                           // LZ_OUT_SCROLL
