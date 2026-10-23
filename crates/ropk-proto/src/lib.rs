@@ -11,3 +11,4 @@ pub mod seq;
 pub mod addr;
 
 pub mod hid;
+pub mod lizard;
